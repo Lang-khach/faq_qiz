@@ -1,0 +1,51 @@
+// Prisma schema generated from existing Postgres schema (questions, quiz_sessions, user_answers)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model questions {
+  id             Int           @id @default(autoincrement())
+  content        String
+  option_a       String
+  option_b       String
+  option_c       String
+  option_d       String
+  correct_answer String        @db.VarChar(1)
+  created_at     DateTime?     @default(now())
+
+  user_answers   user_answers[]
+}
+
+model quiz_sessions {
+  id              Int           @id @default(autoincrement())
+  user_email      String        @db.VarChar(255)
+  score           Int
+  total_questions Int
+  completed_at    DateTime?     @default(now())
+
+  user_answers    user_answers[]
+}
+
+model user_answers {
+  id             Int           @id @default(autoincrement())
+  session_id     Int?
+  question_id    Int?
+  user_email     String        @db.VarChar(255)
+  selected_answer String?      @db.VarChar(1)
+  is_correct     Boolean
+  created_at     DateTime?     @default(now())
+
+  session        quiz_sessions? @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  question       questions?     @relation(fields: [question_id], references: [id], onDelete: Cascade)
+
+  @@index([user_email], name: "idx_user_answers_email")
+  @@index([session_id], name: "idx_user_answers_session")
+}
+
+

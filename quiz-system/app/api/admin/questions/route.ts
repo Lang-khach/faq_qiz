@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { isAdmin } from '@/lib/admin';
 import { getAllQuestions, getQuestionById } from '@/lib/db';
-import { sql } from '@vercel/postgres';
+import { prisma } from '@/lib/prisma';
 
 // GET - Lấy tất cả câu hỏi (chỉ admin)
 export async function GET(request: NextRequest) {
@@ -60,15 +60,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert
-    const result = await sql`
-      INSERT INTO questions (content, option_a, option_b, option_c, option_d, correct_answer)
-      VALUES (${content}, ${option_a}, ${option_b}, ${option_c}, ${option_d}, ${correct_answer})
-      RETURNING *
-    `;
+    const question = await prisma.questions.create({
+      data: {
+        content,
+        option_a,
+        option_b,
+        option_c,
+        option_d,
+        correct_answer,
+      },
+    });
 
     return NextResponse.json({ 
       success: true,
-      question: result.rows[0],
+      question,
       message: 'Đã thêm câu hỏi thành công'
     });
   } catch (error: any) {
@@ -102,25 +107,25 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update
-    const result = await sql`
-      UPDATE questions
-      SET content = ${content},
-          option_a = ${option_a},
-          option_b = ${option_b},
-          option_c = ${option_c},
-          option_d = ${option_d},
-          correct_answer = ${correct_answer}
-      WHERE id = ${id}
-      RETURNING *
-    `;
+    const question = await prisma.questions.update({
+      where: { id },
+      data: {
+        content,
+        option_a,
+        option_b,
+        option_c,
+        option_d,
+        correct_answer,
+      },
+    });
 
-    if (result.rows.length === 0) {
+    if (!question) {
       return NextResponse.json({ error: 'Không tìm thấy câu hỏi' }, { status: 404 });
     }
 
     return NextResponse.json({ 
       success: true,
-      question: result.rows[0],
+      question,
       message: 'Đã cập nhật câu hỏi thành công'
     });
   } catch (error: any) {
@@ -149,12 +154,11 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete
-    const result = await sql`
-      DELETE FROM questions WHERE id = ${parseInt(id)}
-      RETURNING *
-    `;
+    const deleted = await prisma.questions.delete({
+      where: { id: parseInt(id) },
+    });
 
-    if (result.rows.length === 0) {
+    if (!deleted) {
       return NextResponse.json({ error: 'Không tìm thấy câu hỏi' }, { status: 404 });
     }
 
