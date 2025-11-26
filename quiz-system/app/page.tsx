@@ -76,14 +76,16 @@ export default function Home() {
         <div className="bg-white py-20">
           <div className="max-w-5xl mx-auto px-4 text-center">
             <h1 className="text-5xl font-bold mb-6">
-              <span className="text-gray-300">Frequently Ask </span>
-              <span className="text-gray-900">Question</span>
+              <span className="text-gray-300">Hệ thống hỗ trợ </span>
+              <span className="text-gray-900">ôn thi đấu thầu</span>
             </h1>
+            {/*
             <p className="text-cyan-500 mb-2">
               <span className="underline cursor-pointer" onClick={() => router.push('/quiz')}>
                 Click Here
               </span> to buy now.
             </p>
+            */}
           </div>
         </div>
 
@@ -163,14 +165,14 @@ export default function Home() {
         <footer className="bg-white border-t py-6">
           <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
             <div className="text-sm text-gray-600">
-              © Quiz 2025. by IrraHub
+              © Quiz 2025. by Hunglm
             </div>
             <div className="flex items-center gap-6">
-              <a href="#" className="text-gray-600 hover:text-gray-900">Làm Bài</a>
-              <a href="#" className="text-gray-600 hover:text-gray-900">Contact</a>
-              <a href="#" className="text-gray-600 hover:text-gray-900">About</a>
-              <a href="#" className="text-cyan-500 hover:text-cyan-600 font-semibold">FAQ</a>
-              <a href="#" className="text-gray-600 hover:text-gray-900">Terms & Condition</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900">Làm bài</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900">Liên hệ</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900">Giới thiệu</a>
+              <a href="#" className="text-cyan-500 hover:text-cyan-600 font-semibold">Câu hỏi thường gặp</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900">Điều khoản & Điều kiện</a>
             </div>
             <div className="flex gap-4">
               <a href="#" className="text-gray-400 hover:text-gray-600">
