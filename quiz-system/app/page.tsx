@@ -1,13 +1,28 @@
 'use client';
 
 import { useSession, signIn, signOut } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
 
-export default function Home() {
+function HomeContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam) {
+      const errorMessages: { [key: string]: string } = {
+        Configuration: 'Có lỗi trong cấu hình server. Vui lòng liên hệ quản trị viên.',
+        AccessDenied: 'Bạn không có quyền truy cập.',
+        Verification: 'Mã xác minh không hợp lệ hoặc đã hết hạn.',
+        Default: 'Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại.',
+      };
+      setError(errorMessages[errorParam] || errorMessages.Default);
+    }
+  }, [searchParams]);
 
   const faqs = [
     {
@@ -243,8 +258,25 @@ export default function Home() {
             </p>
           </div>
 
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-800 text-center font-medium">
+                ⚠️ {error}
+              </p>
+            </div>
+          )}
+
           <button
-            onClick={() => signIn('google')}
+            onClick={async () => {
+              setError(null);
+              const result = await signIn('google', { 
+                callbackUrl: '/',
+                redirect: false 
+              });
+              if (result?.error) {
+                setError('Không thể đăng nhập. Vui lòng kiểm tra cấu hình Google OAuth.');
+              }
+            }}
             className="w-full flex items-center justify-center gap-3 px-6 py-4 
               bg-white hover:bg-gray-50 border-2 border-gray-300 
               text-gray-700 font-semibold rounded-xl shadow-lg 
@@ -294,5 +326,17 @@ export default function Home() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-cyan-500"></div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }
