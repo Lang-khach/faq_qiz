@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -18,7 +18,7 @@ interface Result {
   };
 }
 
-export default function ResultsPage() {
+function ResultsPageContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -290,3 +290,19 @@ export default function ResultsPage() {
     </div>
   );
 }
+
+export default function ResultsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-cyan-600"></div>
+        </div>
+      }
+    >
+      <ResultsPageContent />
+    </Suspense>
+  );
+}
+
+export const dynamic = 'force-dynamic';

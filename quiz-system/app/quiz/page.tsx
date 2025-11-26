@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -13,7 +13,7 @@ interface Question {
   option_d: string;
 }
 
-export default function QuizPage() {
+function QuizPageContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -49,7 +49,9 @@ export default function QuizPage() {
               option_d: item.option_d,
             } as Question;
           })
-          .filter((item): item is Question => item !== null);
+          .filter(
+            (item: Question | null): item is Question => item !== null
+          );
         setQuestions(normalizedQuestions);
       } else {
         const response = await fetch('/api/questions');
@@ -349,3 +351,22 @@ export default function QuizPage() {
     </div>
   );
 }
+
+export default function QuizPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-cyan-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Đang tải câu hỏi...</p>
+          </div>
+        </div>
+      }
+    >
+      <QuizPageContent />
+    </Suspense>
+  );
+}
+
+export const dynamic = 'force-dynamic';

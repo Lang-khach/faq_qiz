@@ -22,7 +22,9 @@ async function parseWordDocument(buffer: ArrayBuffer): Promise<any[]> {
   const questions: any[] = [];
 
   // Split by table rows or paragraphs
-  const lines = html.split(/<\/?(?:tr|p)>/gi).filter((line) => line.trim());
+  const lines = html
+    .split(/<\/?(?:tr|p)>/gi)
+    .filter((line: string) => line.trim());
 
   let currentQuestion: any = null;
   let optionBuffer = "";
