@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { isAdmin } from '@/lib/admin';
 import { getAllQuestions, getQuestionById } from '@/lib/db';
 import { sql } from '@vercel/postgres';
