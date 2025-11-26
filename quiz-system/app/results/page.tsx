@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -30,15 +30,11 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true);
   const [showWrongOnly, setShowWrongOnly] = useState(false);
 
-  useEffect(() => {
-    if (status === 'authenticated' && sessionId) {
-      loadResults();
-    }
-  }, [status, sessionId]);
-
-  const loadResults = async () => {
+  const loadResults = useCallback(async () => {
     try {
-      const cachedResults = localStorage.getItem(`quiz_results_${sessionId}`);
+      const cachedResults = sessionId 
+        ? localStorage.getItem(`quiz_results_${sessionId}`)
+        : null;
       if (cachedResults) {
         const parsed = JSON.parse(cachedResults);
         setResults(parsed.results || []);
@@ -50,7 +46,13 @@ export default function ResultsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sessionId]);
+
+  useEffect(() => {
+    if (status === 'authenticated' && sessionId) {
+      loadResults();
+    }
+  }, [status, sessionId, loadResults]);
 
   if (status === 'loading' || loading) {
     return (

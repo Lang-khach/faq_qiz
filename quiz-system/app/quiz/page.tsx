@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -26,22 +26,33 @@ export default function QuizPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (status === 'authenticated') {
-      loadQuestions();
-    }
-  }, [status, retryMode, sessionId]);
-
-  const loadQuestions = async () => {
+  const loadQuestions = useCallback(async () => {
     try {
-      let response;
-      
+      setLoading(true);
+
       if (retryMode && sessionId) {
-        response = await fetch(`/api/wrong-answers?sessionId=${sessionId}`);
+        const response = await fetch(`/api/wrong-answers?sessionId=${sessionId}`);
         const data = await response.json();
-        setQuestions(data.wrongAnswers || []);
+        const normalizedQuestions: Question[] = (data.wrongAnswers || [])
+          .map((item: any) => {
+            const questionId = typeof item.id === 'number' ? item.id : Number(item.question_id);
+            if (!Number.isFinite(questionId)) {
+              return null;
+            }
+
+            return {
+              id: questionId,
+              content: item.content,
+              option_a: item.option_a,
+              option_b: item.option_b,
+              option_c: item.option_c,
+              option_d: item.option_d,
+            } as Question;
+          })
+          .filter((item): item is Question => item !== null);
+        setQuestions(normalizedQuestions);
       } else {
-        response = await fetch('/api/questions');
+        const response = await fetch('/api/questions');
         const data = await response.json();
         setQuestions(data.questions || []);
       }
@@ -50,7 +61,13 @@ export default function QuizPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [retryMode, sessionId]);
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      loadQuestions();
+    }
+  }, [status, loadQuestions]);
 
   if (status === 'loading' || loading) {
     return (

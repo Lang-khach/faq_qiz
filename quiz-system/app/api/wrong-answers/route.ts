@@ -19,8 +19,12 @@ export async function GET(request: NextRequest) {
     }
 
     const wrongAnswers = await getWrongAnswers(session.user.email, parseInt(sessionId));
+    const normalizedAnswers = wrongAnswers.map((answer: any) => ({
+      ...answer,
+      id: answer.id ?? answer.question_id,
+    }));
 
-    return NextResponse.json({ wrongAnswers });
+    return NextResponse.json({ wrongAnswers: normalizedAnswers });
   } catch (error: any) {
     console.error('Get wrong answers error:', error);
     return NextResponse.json({ 

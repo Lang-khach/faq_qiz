@@ -4,6 +4,9 @@ import { promisify } from 'util';
 import { writeFile, unlink, readFile } from 'fs/promises';
 import path from 'path';
 import { deleteAllQuestions, insertQuestions, initializeDatabase } from '@/lib/db';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { isAdmin } from '@/lib/admin';
 
 const execPromise = promisify(exec);
 
@@ -12,6 +15,12 @@ export async function POST(request: NextRequest) {
   let jsonFilePath = '';
   
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !isAdmin(session.user?.email)) {
+      return NextResponse.json({ error: 'Unauthorized - Admin only' }, { status: 403 });
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
     

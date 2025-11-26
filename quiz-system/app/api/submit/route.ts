@@ -16,13 +16,18 @@ export async function POST(request: NextRequest) {
     }
 
     const { answers } = await request.json();
+    const normalizedAnswers = Array.isArray(answers) ? answers : [];
+
+    if (normalizedAnswers.length === 0) {
+      return NextResponse.json({ error: 'Danh sách câu trả lời không hợp lệ' }, { status: 400 });
+    }
     // answers format: [{ questionId: 1, selectedAnswer: 'A' }, ...]
 
     let correctCount = 0;
     const results = [];
 
     // Kiểm tra từng câu trả lời
-    for (const answer of answers) {
+    for (const answer of normalizedAnswers) {
       const question = await getQuestionById(answer.questionId);
       
       if (question) {
@@ -49,7 +54,7 @@ export async function POST(request: NextRequest) {
     const quizSession = await createQuizSession(
       session.user.email,
       correctCount,
-      answers.length
+      normalizedAnswers.length
     );
 
     // Lưu từng câu trả lời
@@ -66,8 +71,8 @@ export async function POST(request: NextRequest) {
     const responseData = {
       sessionId: quizSession.id,
       score: correctCount,
-      total: answers.length,
-      percentage: Math.round((correctCount / answers.length) * 100),
+      total: normalizedAnswers.length,
+      percentage: Math.round((correctCount / normalizedAnswers.length) * 100),
       results
     };
 
